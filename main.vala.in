@@ -1,0 +1,36 @@
+using GLib;
+using Pluie;
+
+int main (string[] argv)
+{
+    var p = new PrayTime ("@DATA_PATH@", "@INSTALL_PATH@", "@VERSION@");
+
+    if (argv.length > 1) {
+
+        switch (argv[1]) {
+
+            case "cron" : 
+                p.init_cron ();
+                break;
+
+            case "timings" :
+
+                break;
+
+            case "play" :
+                if (argv.length > 2) {
+                    p.play_adhan (argv[2]);
+                }
+                else {
+                    stderr.printf ("missing pray parameter\n");
+                    return 1;
+                }
+                break;
+        }
+    }
+    else {
+        p.infos ();
+    }
+    stdout.printf ("\n");
+    return 0;
+}
