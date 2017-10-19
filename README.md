@@ -7,6 +7,8 @@ PrayTime use the api on aladhan.com to retriew timings.
 
 ## Prerequisites
 
+valac curl meson ninja glib gobject json-glib gstreamer
+
 see meson.build 
 
 ```
@@ -17,7 +19,14 @@ json_dep      = dependency('json-glib-1.0')
 gstreamer_dep = dependency('gstreamer-1.0')
 ```
 
+on debian or debian like you can do :
+```
+$ sudo apt-get install valac libjson-glib-dev libgstreamer1.0-dev meson ninja-build
+```
+
 ## Install
+
+git clone the project then cd to project and do :
 
 ```
 meson --prefix=/usr ./ build
