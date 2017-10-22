@@ -202,7 +202,7 @@ class Pluie.PrayTime : GLib.Object
     private void set_cron (GLib.DateTime date)
     {
         try {
-            string   bin       = "root "+this.bin;
+            string   bin       = "root "+Path.build_filename(this.bin, "praytime");
             string   cron_path = this.get_config ("path", "Cron");
             string[] update    = this.get_config ("time", "Cron").split (":", 2);
             string   content   = "# %s\n%d %d * * * %s %s\n".printf (date.format ("%c"), int.parse (update[1]), int.parse(update[0]) , bin, "cron");
