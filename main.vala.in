@@ -13,8 +13,8 @@ int main (string[] argv)
                 p.init_cron ();
                 break;
 
-            case "timings" :
-
+            case "version" :
+                stdout.printf ("@VERSION@");
                 break;
 
             case "play" :
@@ -25,6 +25,40 @@ int main (string[] argv)
                     stderr.printf ("missing pray parameter\n");
                     return 1;
                 }
+                break;
+            
+            default :
+                string usage = """%s%s%s    usage :
+        %s# update user crontab
+        # before installing please check config file 
+        # @DATA_PATH@/praytime.ini%s
+        praytime %scron%s
+        # display program version%s
+        praytime %sversion%s
+        # play adhan (Fajr, Dhuhr, Asr, Maghrib, Isha)%s
+        praytime %splay %sPRAYER_NAME%s
+        # display prayer timings%s
+        praytime%s
+""";
+                stderr.printf (
+                    usage, 
+                    PrayTime.COLOR1,
+                    PrayTime.HEADER,
+                    PrayTime.COLOR6,
+                    PrayTime.COLOR5,
+                    PrayTime.COLOR3,
+                    PrayTime.COLOR1,
+                    PrayTime.COLOR5,
+                    PrayTime.COLOR3,
+                    PrayTime.COLOR1,
+                    PrayTime.COLOR5,
+                    PrayTime.COLOR3,
+                    PrayTime.COLOR1,
+                    PrayTime.COLOR4,
+                    PrayTime.COLOR5,
+                    PrayTime.COLOR3,
+                    PrayTime.COLOR_OFF
+                );
                 break;
         }
     }

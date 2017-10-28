@@ -6,7 +6,7 @@ gio_dep       = dependency('gio-2.0')
 json_dep      = dependency('json-glib-1.0')
 gstreamer_dep = dependency('gstreamer-1.0')
 
-version       = '0.2.2'
+version       = '0.2.4'
 bindir        = join_paths(get_option('prefix'), get_option('bindir'))
 datadir       = join_paths(get_option('prefix'), get_option('datadir'), 'praytime')
 

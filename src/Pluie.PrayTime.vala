@@ -3,19 +3,35 @@ using Gst;
 
 class Pluie.PrayTime : GLib.Object
 {
-    const   bool          DEBUG    = false;
-    const   string        SEP      = "----------------------------------------------------------";
-    const   string[]      PRAYLIST = { "Fajr", "Dhuhr", "Asr", "Maghrib", "Isha" };
-    const   string        protocol = "http";
-    const   string        hostname = "api.aladhan.com";
-    const   string        uri      = "timingsByCity?";
+    public  const string   HEADER    = """         ____                  _______              
+        / __ \_________ ___  _/_  __(_____ ___  ___ 
+       / /_/ / ___/ __ `/ / / // / / / __ `__ \/ _ \
+      / ____/ /  / /_/ / /_/ // / / / / / / / /  __/
+     /_/   /_/   \__,_/\__, //_/ /_/_/ /_/ /_/\___/ 
+       by a-sansara   /____/   gnu gpl v3
 
-    private string        path;
-    private string        version;
-    private string        bin;
-    private GLib.KeyFile  kf;
-    private GLib.MainLoop loop;
-    private Gst.Element   playbin;
+""";
+    public  const string   COLOR1    = "\033[1;38;5;36m";
+    public  const string   COLOR2    = "\033[1;38;5;97m";
+    public  const string   COLOR3    = "\033[1;38;5;255m";
+    public  const string   COLOR4    = "\033[1;38;5;157m";
+    public  const string   COLOR5    = "\033[1;38;5;67m";
+    public  const string   COLOR6    = "\033[1;38;5;193m";
+    public  const string   COLOR_OFF = "\033[m";
+
+    private const bool     DEBUG     = false;
+    private const string   SEP       = "__________________________________________________________\n";
+    private const string[] PRAYLIST  = { "Fajr", "Dhuhr", "Asr", "Maghrib", "Isha" };
+    private const string   protocol  = "http";
+    private const string   hostname  = "api.aladhan.com";
+    private const string   uri       = "timingsByCity?";
+
+    private string         path;
+    private string         version;
+    private string         bin;
+    private GLib.KeyFile   kf;
+    private GLib.MainLoop  loop;
+    private Gst.Element    playbin;
 
 
     public PrayTime (string path, string bin, string version)
@@ -32,7 +48,22 @@ class Pluie.PrayTime : GLib.Object
         if (pray in PrayTime.PRAYLIST) {
             double volume = this.get_volume (pray.down ());
             string mp3    = this.get_mp3 (pray.down ());
+            stdout.printf (
+                "%s%s%s %s %s time%s \n",
+                PrayTime.COLOR1,
+                PrayTime.SEP,
+                PrayTime.HEADER,
+                PrayTime.COLOR6,
+                pray,
+                PrayTime.COLOR_OFF
+            );
             this.play (mp3, volume);
+            stdout.printf (
+                "%s%s%s\n",
+                PrayTime.COLOR1,
+                PrayTime.SEP,
+                PrayTime.COLOR_OFF
+            );
         }
         else {
             this.on_error(@"invalid pray parameter '$pray'");
@@ -42,19 +73,35 @@ class Pluie.PrayTime : GLib.Object
 
     public void infos()
     {
-        KeyFile k = this.load_config ("praytime.daily.ini");
+        KeyFile k = this.load_config ("praytime.daily.ini", true);
         var date  = new GLib.DateTime.now_local ();
         stdout.printf (
-            "%s\n %s %s - %s\n%s\n", 
-            PrayTime.SEP, 
+            "%s%s%s%s %s %s %s  %s %s %s\n%s%s%s\n", 
+            PrayTime.COLOR1, 
+            PrayTime.SEP,
+            PrayTime.HEADER, 
+            PrayTime.COLOR6,
             this.get_config ("city"), 
-            this.get_config ("country"), 
-            date.format ("%z %A %d %B %Y %T"), 
-            PrayTime.SEP
+            this.get_config ("country"),
+            PrayTime.COLOR3,
+            date.format ("%z %A %d %B %Y"),
+            PrayTime.COLOR4,
+            date.format ("%T"),
+            PrayTime.COLOR1,
+            PrayTime.SEP,
+            PrayTime.COLOR_OFF
         );
         foreach (string pray in PrayTime.PRAYLIST) {
             try {
-                stdout.printf (" %10s : %s\n", pray, k.get_string ("Praytime", pray.down ()));
+                stdout.printf (
+                    " %s%10s%s : %s%s%s\n",
+                    PrayTime.COLOR1,
+                    pray,
+                    PrayTime.COLOR3,
+                    PrayTime.COLOR4,
+                    k.get_string ("Praytime", pray.down ()),
+                    PrayTime.COLOR_OFF
+                );
             }
             catch (GLib.KeyFileError e) {
                 this.on_error (e.message);
@@ -92,18 +139,18 @@ class Pluie.PrayTime : GLib.Object
     }
 
 
-    private string get_config_file (string basename)
+    private string get_config_file (string basename, bool tmp)
     {
-        return Path.build_filename (this.path, basename);
+        return Path.build_filename (!tmp ? this.path : Environment.get_tmp_dir (), basename);
     }
 
 
-    private KeyFile load_config (string basename)
+    private KeyFile load_config (string basename, bool tmp = false)
     {
         KeyFile f = new KeyFile ();
         f.set_list_separator (',');
         try {
-            f.load_from_file (this.get_config_file (basename), KeyFileFlags.NONE);
+            f.load_from_file (this.get_config_file (basename, tmp), KeyFileFlags.NONE);
         }
         catch (KeyFileError e) {
             this.on_error (e.message);
@@ -148,6 +195,19 @@ class Pluie.PrayTime : GLib.Object
     }
 
 
+    private int spawn_cmd (string cmd, out string response)
+    {
+        int    status;
+        string std_error;
+        try {
+            Process.spawn_command_line_sync (cmd, out response, out std_error, out status);
+        } catch (SpawnError e) {
+            stderr.printf ("%s\n", e.message);
+        }
+        return status;
+    }
+
+
     private string get_timings ()
     {
         string url  = "%s://%s/%scity=%s&country=%s&method=%s&latitudeAdjustmentMethod=%s".printf(
@@ -162,9 +222,6 @@ class Pluie.PrayTime : GLib.Object
         var f        = File.new_for_uri (url);
         var response = "";
         try {
-            // root user experience problem with that
-            // don't know why, use curl as alternative
-            // in get_alt_timings
             FileInputStream fs = f.read ();
             var dis  = new DataInputStream (fs);
             string line;
@@ -183,59 +240,22 @@ class Pluie.PrayTime : GLib.Object
     private string get_alt_timings (string url)
     {
         stdout.printf(" trying alternate method to get timings\n");
-        string response = "";
-        string std_error;
-        int    status;
-        try {
-            Process.spawn_command_line_sync (
-                "curl "+url,
-                out response,
-                out std_error,
-                out status
-            );
-        } catch (SpawnError e) {
-            stderr.printf ("%s\n", e.message);
-        }
+        string response;
+        this.spawn_cmd ("curl %s".printf (url), out response);
         return response;
     }
 
 
     private int get_user_crontab_content (string user, out string response)
     {
-        stdout.printf("getting %s crontab content\n", user);
-        int    status;
-        string std_error;
-        try {
-            Process.spawn_command_line_sync (
-                "crontab -l -u "+user,
-                out response,
-                out std_error,
-                out status
-            );
-        } catch (SpawnError e) {
-            stderr.printf ("%s\n", e.message);
-        }
-        return status;
+        return this.spawn_cmd ("crontab -l -u %s".printf (user), out response);
     }
 
 
     private int install_user_crontab (string user, string path)
-    {
-        int    status;
-        string std_error;
+    {        
         string response;
-        try {
-            Process.spawn_command_line_sync (
-                "crontab %s %s".printf (path, user), 
-                out response,
-                out std_error,
-                out status
-            );
-        } catch (SpawnError e) {
-            stderr.printf ("%s\n", e.message);
-        }
-        stdout.printf ("install crontab %s :\n%s\n", user, response);
-        return status;
+        return this.spawn_cmd ("crontab %s -u %s".printf (path, user), out response);
     }
 
 
@@ -245,7 +265,7 @@ class Pluie.PrayTime : GLib.Object
         string udata;
         try {
             if (this.get_user_crontab_content (user, out udata) == 0) {
-                var regex = new Regex (Path.build_filename (this.bin, "praytime").escape ());
+                var regex = new Regex (Path.build_filename (this.bin, "praytime").escape (null));
                 foreach (string line in udata.split ("\n")) {
                     if (!regex.match (line) && line != "") {
                         data += line + "\n";
@@ -258,7 +278,6 @@ class Pluie.PrayTime : GLib.Object
             data = null;
             stdout.printf ("Error %s\n", e.message);
         }
-        stdout.printf ("crontab %s content :\n%s\n", user, data);
         return data;
     }
 
@@ -266,29 +285,27 @@ class Pluie.PrayTime : GLib.Object
     private void set_cron (GLib.DateTime date)
     {
         try {
-            string   bin       = Path.build_filename(this.bin, "praytime");
-            string   cron_path = this.get_config ("path", "Cron");
-            string   user      = this.get_config ("user", "Cron");
-            string[] update    = this.get_config ("time", "Cron").split (":", 2);
-            string   content   = "# %s\n%d %d * * * root %s cron\n".printf (date.format ("%c"), int.parse (update[1]), int.parse (update[0]) , bin);
-            bool done = FileUtils.set_contents (cron_path, content);
-            stdout.printf ("\n updating %s : %s\n", cron_path, done ? "ok" : "ko");
-            if (done) {
-                KeyFile k = this.load_config ("praytime.daily.ini");
-                content   = "# > autogenerated by %s %s\n".printf(bin, date.format ("%c"));
-                string[] time = null;
-                foreach (string pray in PrayTime.PRAYLIST) {
-                    time     = k.get_string ("Praytime", pray.down ()).split (":", 2);
-                    content += "%s %s * * * sh -c \"DISPLAY=:0 %s play %s\"\n".printf (time[1], time[0] , bin, pray);
-                }
-                content  += "# < autogenerated by %s\n".printf(bin);
-                cron_path = Path.build_filename (Environment.get_tmp_dir (), "praytime.crontab");
-                content   = this.get_user_crontab (ref user, ref content);
-                if (content != null) {
-                    if (FileUtils.set_contents (cron_path, content)) {
-                        this.install_user_crontab (user, cron_path);
-                        stdout.printf ("\n updating crontab %s : %s\n", user, done ? "ok" : "ko");
-                    }
+            KeyFile  k         = this.load_config ("praytime.daily.ini", true);
+            string?  user      = Environment.get_variable ("SUDO_USER");
+            if (user == null) {
+                user      = Environment.get_variable ("USER");
+            }
+            string[] update    = this.get_config ("time", "Cron").split (":", 2);            
+            string[] time      = null;
+            string   bin       = Path.build_filename (this.bin, "praytime");
+            string   cron_path = Path.build_filename (Environment.get_tmp_dir (), "praytime.crontab");
+            string   content   = "# > autogenerated by %s %s\n".printf (bin, date.format ("%c")) + 
+                                 "%02d %02d * * * %s cron\n".printf (int.parse (update[1]), int.parse (update[0]) , bin);
+            foreach (string pray in PrayTime.PRAYLIST) {
+                time     = k.get_string ("Praytime", pray.down ()).split (":", 2);
+                content += "%s %s * * * sh -c \"DISPLAY=:0 %s play %s\"\n".printf (time[1], time[0] , bin, pray);
+            }
+            content  += "# < autogenerated by %s\n".printf(bin);            
+            content   = this.get_user_crontab (ref user, ref content);
+            if (content != null) {
+                if (FileUtils.set_contents (cron_path, content)) {
+                    int status = this.install_user_crontab (user, cron_path);
+                    stdout.printf ("\n updating crontab %s : %s\n", user, status == 0 ? "ok" : "ko");
                 }
             }
         }
@@ -308,7 +325,7 @@ class Pluie.PrayTime : GLib.Object
             data += "%-10s = %s\n".printf (pray.down(), results.get_string_member (pray));
         }
         try {
-            FileUtils.set_contents (this.get_config_file ("praytime.daily.ini"), data);
+            FileUtils.set_contents (this.get_config_file ("praytime.daily.ini", true), data);
         }
         catch (GLib.FileError e) {
             stderr.printf ("%s\n", e.message);

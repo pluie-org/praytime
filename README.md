@@ -1,6 +1,6 @@
 # PrayTime
 
-PrayTime is a small vala program which find timings of Islamic Prayer
+PrayTime is a small program written in vala which find timings of Islamic Prayer
 and play the adhan at the given time.
 
 PrayTime use the api on aladhan.com to retriew timings.
@@ -21,7 +21,7 @@ gstreamer_dep = dependency('gstreamer-1.0')
 
 on debian or debian like you can do :
 ```
-$ sudo apt-get install valac libjson-glib-dev libgstreamer1.0-dev meson ninja-build
+$ sudo apt-get install valac libjson-glib-dev libgstreamer1.0-dev libgstreamer0.10-dev meson ninja-build
 ```
 
 ## Install
@@ -68,8 +68,6 @@ isha                     =
 [Cron]
 # timings updating time
 time                     = 00:00
-# cron file
-path                     = /etc/cron.d/praytime
 ```
 
 ## Usage
@@ -79,22 +77,31 @@ First step is to edit configuration file
 /usr/share/praytime.praytime.ini
 ```
 
-and set your city & location, then add some adhan file.
+Set your city & location, then add some adhan file
 
 After that you can initialise the cron installation with
 
 ```
-$ sudo praytime cron
+$ praytime cron
 
- updating /etc/cron.d/praytime : ok
-----------------------------------------------------------
- Paris FR - +0200 Thursday 19 October 2017 02:17:12
-----------------------------------------------------------
-       Fajr : 06:32
-      Dhuhr : 13:36
-        Asr : 16:23
-    Maghrib : 18:53
-       Isha : 20:32
+ updating crontab a-sansara : ok
+__________________________________________________________
+         ____                  _______              
+        / __ \_________ ___  _/_  __(_____ ___  ___ 
+       / /_/ / ___/ __ `/ / / // / / / __ `__ \/ _ \
+      / ____/ /  / /_/ / /_/ // / / / / / / / /  __/
+     /_/   /_/   \__,_/\__, //_/ /_/_/ /_/ /_/\___/ 
+       by a-sansara   /____/   gnu gpl v3
+
+ Paris FR   +0200 Saturday 28 October 2017  03:46:55
+__________________________________________________________
+
+       Fajr : 06:45
+      Dhuhr : 13:34
+        Asr : 16:10
+    Maghrib : 18:37
+       Isha : 20:17
+
 ```
 
 you can test adhan with :
