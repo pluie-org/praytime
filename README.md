@@ -7,7 +7,7 @@ PrayTime use the api on aladhan.com to retriew timings.
 
 ## Prerequisites
 
-valac curl meson ninja glib gobject json-glib gstreamer
+valac curl meson ninja glib gobject json-glib gstreamer pluie-echo
 
 see meson.build 
 
@@ -17,12 +17,22 @@ gobject_dep   = dependency('gobject-2.0')
 gio_dep       = dependency('gio-2.0')
 json_dep      = dependency('json-glib-1.0')
 gstreamer_dep = dependency('gstreamer-1.0')
+echo_dep      = dependency('pluie-echo-0.2')
 ```
 
 on debian or debian like you can do :
 ```
 $ sudo apt-get install valac libjson-glib-dev libgstreamer1.0-dev libgstreamer0.10-dev meson ninja-build
 ```
+there is not yet a package for pluie-echo dependency, but you can install it with :
+```
+cd /tmp/
+git clone https://github.com/pluie-org/libpluie-echo.git --branch latest --single-branch
+cd libpluie-echo
+meson --prefix=/usr ./ build
+sudo ninja install -C build
+```
+
 
 ## Install
 
@@ -72,6 +82,9 @@ time                     = 00:00
 
 ## Usage
 
+![praytime usage](https://www.meta-tech.academy/img/praytime-usage.png?tmp=2)
+
+
 First step is to edit configuration file
 ```
 /usr/share/praytime.praytime.ini
@@ -83,26 +96,9 @@ After that you can initialise the cron installation with
 
 ```
 $ praytime cron
-
- updating crontab a-sansara : ok
-__________________________________________________________
-         ____                  _______              
-        / __ \_________ ___  _/_  __(_____ ___  ___ 
-       / /_/ / ___/ __ `/ / / // / / / __ `__ \/ _ \
-      / ____/ /  / /_/ / /_/ // / / / / / / / /  __/
-     /_/   /_/   \__,_/\__, //_/ /_/_/ /_/ /_/\___/ 
-       by a-sansara   /____/   gnu gpl v3
-
- Paris FR   +0200 Saturday 28 October 2017  03:46:55
-__________________________________________________________
-
-       Fajr : 06:45
-      Dhuhr : 13:34
-        Asr : 16:10
-    Maghrib : 18:37
-       Isha : 20:17
-
 ```
+![praytime cron](https://www.meta-tech.academy/img/praytime-cron.png?tmp=1)
+
 
 you can test adhan with :
 
@@ -110,18 +106,14 @@ you can test adhan with :
 # Fajr or other prayer
 praytime play Fajr
 ```
+![praytime play adhan](https://www.meta-tech.academy/img/praytime-play.png?tmp=1)
+
 
 to see current timings simply do :
 ```
 $ praytime
-
-----------------------------------------------------------
- Paris FR - +0200 Thursday 19 October 2017 02:20:26
-----------------------------------------------------------
-       Fajr : 06:32
-      Dhuhr : 13:36
-        Asr : 16:23
-    Maghrib : 18:53
-       Isha : 20:32
-
 ```
+![praytime timings](https://www.meta-tech.academy/img/praytime-timings.png?tmp=1)
+
+the red star indicates coming prayers
+

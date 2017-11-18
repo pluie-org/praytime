@@ -3,68 +3,55 @@ using Pluie;
 
 int main (string[] argv)
 {
+    int done = 0;
+    var nostate = false;
+    Echo.init (bool.parse("@DEBUG@"));
+    Dbg.in (Log.METHOD);
+
     var p = new PrayTime ("@DATA_PATH@", "@INSTALL_PATH@", "@VERSION@");
 
     if (argv.length > 1) {
 
-        switch (argv[1]) {
+        if (argv[1] == "version") {
+            stdout.printf (p.version);
+            nostate = true;
+        }
+        else {
 
-            case "cron" : 
-                p.init_cron ();
-                break;
+            of.title ("PrayTime", p.version, "a-sansara");
 
-            case "version" :
-                stdout.printf ("@VERSION@");
-                break;
+            switch (argv[1]) {
 
-            case "play" :
-                if (argv.length > 2) {
-                    p.play_adhan (argv[2]);
-                }
-                else {
-                    stderr.printf ("missing pray parameter\n");
-                    return 1;
-                }
-                break;
-            
-            default :
-                string usage = """%s%s%s    usage :
-        %s# update user crontab
-        # before installing please check config file 
-        # @DATA_PATH@/praytime.ini%s
-        praytime %scron%s
-        # display program version%s
-        praytime %sversion%s
-        # play adhan (Fajr, Dhuhr, Asr, Maghrib, Isha)%s
-        praytime %splay %sPRAYER_NAME%s
-        # display prayer timings%s
-        praytime%s
-""";
-                stderr.printf (
-                    usage, 
-                    PrayTime.COLOR1,
-                    PrayTime.HEADER,
-                    PrayTime.COLOR6,
-                    PrayTime.COLOR5,
-                    PrayTime.COLOR3,
-                    PrayTime.COLOR1,
-                    PrayTime.COLOR5,
-                    PrayTime.COLOR3,
-                    PrayTime.COLOR1,
-                    PrayTime.COLOR5,
-                    PrayTime.COLOR3,
-                    PrayTime.COLOR1,
-                    PrayTime.COLOR4,
-                    PrayTime.COLOR5,
-                    PrayTime.COLOR3,
-                    PrayTime.COLOR_OFF
-                );
-                break;
+                case "cron" : 
+                    p.init_cron ();
+                    break;
+
+                case "play" :
+                    if (argv.length > 2) {
+                        done = p.play_adhan (argv[2]);
+                    }
+                    else {
+                        of.error ("missing pray parameter");
+                        done = 1;
+                    }
+                    break;
+                
+                default :
+                    of.warn ("invalid command %s".printf (argv[1]));
+                    p.usage();
+                    done = 1;
+                    break;
+            }
         }
     }
     else {
         p.infos ();
     }
-    stdout.printf ("\n");
-    return 0;
+    of.echo ();
+    if (!nostate) {
+        of.rs (done == 0);
+        of.echo ();
+    }
+    Dbg.out (Log.METHOD);
+    return done;
 }
