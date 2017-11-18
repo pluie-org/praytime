@@ -272,6 +272,9 @@ class Pluie.PrayTime : GLib.Object
         if (user == null) {
             user = Environment.get_variable ("USER");
         }
+        if (user == null) {
+            user = Environment.get_variable ("LOGNAME");
+        }
         Dbg.out (Log.METHOD, null, Log.LINE, Log.FILE);
         return user;
     }
