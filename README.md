@@ -77,7 +77,7 @@ isha                     =
 
 [Cron]
 # timings updating time
-time                     = 00:00
+time                     = 02:22
 ```
 
 ## Usage

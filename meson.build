@@ -7,7 +7,7 @@ json_dep       = dependency('json-glib-1.0')
 gstreamer_dep  = dependency('gstreamer-1.0')
 echo_dep       = dependency('pluie-echo-0.2')
 
-version       = '0.2.5'
+version       = '0.2.6'
 bindir        = join_paths(get_option('prefix'), get_option('bindir'))
 datadir       = join_paths(get_option('prefix'), get_option('datadir'), 'praytime')
 
